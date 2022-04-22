@@ -13,7 +13,7 @@ import (
 	"xh_detect/utils/request"
 )
 
-const alertApi = "http://47.97.252.215/alert/report"
+const alertApi = "https://api.external.paigod.work/alert/report"
 const ipaasApi = "https://ipaas.paigod.work/api/v1/alxh"
 
 type Addr struct {
@@ -69,15 +69,18 @@ func detect(dstAddr Addr, mid string, wg *sync.WaitGroup) {
 	defer wg.Done()
 	p := ping.NewPing("0.0.0.0", dstAddr.IP, 3)
 	if err := p.SendICMP(); err != nil {
+		//fmt.Printf("Ping >>> srcIp: %v, dstIp: %v, %v\n", "0.0.0.0", dstAddr, err.Error())
 		log.GlobalLog.Errorf("Ping >>> srcIp: %v, dstIp: %v, %v", "0.0.0.0", dstAddr, err.Error())
 		return
 	}
 
 	conn, err := net.DialTimeout("tcp", dstAddr.String(), time.Duration(3)*time.Second)
 	if err != nil {
+		//fmt.Printf("[%s 连接失败] 平均延时: %vms, 最大延时: %vms, 最小延时: %vms, 丢包率: %v%%\n", dstAddr.String(), p.AvgDelay, p.MaxDelay, p.MinDelay, p.LossRate)
 		sendAlarm(mid, fmt.Sprintf("[%s 连接失败] 平均延时: %vms, 最大延时: %vms, 最小延时: %vms, 丢包率: %v%%", dstAddr.String(), p.AvgDelay, p.MaxDelay, p.MinDelay, p.LossRate))
 	} else {
 		conn.Close()
+		//fmt.Printf("%s 连接成功\n", dstAddr.String())
 		log.GlobalLog.Infof("%s 连接成功", dstAddr.String())
 		//msgBuf = append(msgBuf, fmt.Sprintf("%s 连接成功", dstAddr.String()))
 	}
@@ -106,7 +109,7 @@ func init() {
 
 func main() {
 	for {
-		time.Sleep(time.Minute)
+		time.Sleep(time.Duration(5) * time.Minute)
 
 		mid, err := utils.GetMachineId()
 		if err != nil {
