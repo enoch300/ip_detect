@@ -106,7 +106,7 @@ func (p *Ping) SendICMP() error {
 		B:   make([]byte, 500),
 	}
 
-	for i := 1; i < 33; i++ {
+	for i := 1; i <= 32; i++ {
 		seq++
 		start := time.Now()
 		err = c.SetDeadline(time.Now().Add(time.Duration(p.Timeout) * time.Second))
@@ -114,7 +114,7 @@ func (p *Ping) SendICMP() error {
 			return err
 		}
 
-		bs := make([]byte, 4)
+		bs := make([]byte, 64)
 		binary.LittleEndian.PutUint32(bs, uint32(seq))
 		wm := icmp.Message{
 			Type: ipv4.ICMPTypeEcho,
