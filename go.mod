@@ -4,7 +4,8 @@ go 1.17
 
 require (
 	github.com/enoch300/glog v0.0.0-20210913102843-60ae70263a05
-	github.com/enoch300/nt v1.0.4
+	github.com/enoch300/nt v1.0.5
+	github.com/pochard/commons v1.1.2
 	github.com/sirupsen/logrus v1.8.1
 )
 

@@ -22,17 +22,17 @@ type Response struct {
 }
 
 type Targets struct {
-	T             string
-	Device        string
-	Business      string
-	BusinessID    string
-	BusinessOwner string
-	Region        string
-	Ip            string
-	Port          string
+	T      string
+	Dev    string
+	Biz    string
+	BId    string
+	BD     string
+	Region string
+	Ip     string
+	Port   string
 }
 
-func MonitorTargets() (targets []Targets) {
+func MonitorTargets() (targets []*Targets) {
 	for bn, url := range API {
 		body, httpcode, err := request.Get(url, nil)
 		if err != nil {
@@ -77,14 +77,14 @@ func MonitorTargets() (targets []Targets) {
 					device = "server"
 				}
 
-				targets = append(targets, Targets{
-					Device:        device,
-					Business:      bn,
-					BusinessID:    strs[0],
-					Region:        strs[1],
-					Ip:            ip,
-					Port:          port,
-					BusinessOwner: strs[3],
+				targets = append(targets, &Targets{
+					Dev:    device,
+					Biz:    bn,
+					BId:    strs[0],
+					Region: strs[1],
+					Ip:     ip,
+					Port:   port,
+					BD:     strs[3],
 				})
 			}
 		}
