@@ -24,6 +24,7 @@ func detect(t *api.Targets) {
 
 	t.T = time.Now().Format("2006-01-02 15:04:05")
 	opId := randstr.RandomAlphanumeric(17)
+
 	_, pingReturn, err := ping.Ping("0.0.0.0", t.Ip, 32, 1000, 1000)
 	if err != nil {
 		log.GlobalLog.Errorf("ping %v", err.Error())
