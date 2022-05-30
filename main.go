@@ -66,7 +66,7 @@ func detect(t *api.Targets) {
 	//	LossRate: float64(lastHop.Loss),
 	//}
 	//
-	go api.Report(t, hops, pingReturn, opId)
+	api.Report(t, hops, pingReturn, opId)
 	//if lastHop.Addr == "???" || lastHop.Loss > 5 {
 	//	if err = api.Alert(t, hops); err != nil {
 	//		log.GlobalLog.Errorf(err.Error())
@@ -74,12 +74,12 @@ func detect(t *api.Targets) {
 	//	}
 	//}
 
-	if pingReturn.DropRate > 5 {
-		if err = api.Alert(t, hops, pingReturn); err != nil {
-			log.GlobalLog.Errorf(err.Error())
-			return
-		}
-	}
+	//if pingReturn.DropRate > 5 {
+	//	if err = api.Alert(t, hops, pingReturn); err != nil {
+	//		log.GlobalLog.Errorf(err.Error())
+	//		return
+	//	}
+	//}
 }
 
 func main() {
