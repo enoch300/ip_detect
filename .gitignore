@@ -1,10 +1,16 @@
 # Binaries for programs and plugins
+<<<<<<< HEAD
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
 
+=======
+bin/
+logs/
+test.go
+>>>>>>> 52c810ff9b823c0b781aeb745e80364c1b3b7a8b
 # Test binary, built with `go test -c`
 *.test
 
