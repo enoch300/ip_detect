@@ -1,1 +1,5 @@
 logs
+detectd
+*.tar.gz
+*.md5
+build.sh

@@ -2,11 +2,8 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/enoch300/nt/mtr"
-	"github.com/enoch300/nt/ping"
 	"ip_detect/request"
 	. "ip_detect/utils/log"
-	"strconv"
 )
 
 type RequestIpaas struct {
@@ -50,25 +47,6 @@ type MTR struct {
 	Wrst float64 `json:"wrst"`
 }
 
-func Report(t *Targets, hops []mtr.Hop, pingReturn ping.PingReturn, opId string) {
-	var values [][]interface{}
-	value := []interface{}{t.T, opId, t.Dev, t.Biz, t.BD, t.BId, t.Region, "ali", t.Ip, t.Port, pingReturn.AvgTime.Seconds() * 1000, pingReturn.WrstTime.Seconds() * 1000, pingReturn.BestTime.Seconds() * 1000, pingReturn.DropRate}
-	values = append(values, value)
-	PushToIpaas("ipaas", "ip_detect", []string{"t", "id", "device", "business", "bd", "bid", "region", "src", "dst", "dport", "avg", "max", "min", "loss_rate"}, values)
-
-	if len(hops) == 0 {
-		return
-	}
-
-	var mtrValues [][]interface{}
-	for _, h := range hops {
-		value = []interface{}{t.T, opId, strconv.Itoa(h.RouteNo), h.Addr, float64(h.Loss), strconv.Itoa(h.Snt), float64(h.Avg), float64(h.Best), float64(h.Wrst)}
-		mtrValues = append(mtrValues, value)
-	}
-
-	PushToIpaas("ipaas", "ip_detect_mtr", []string{"t", "id", "no", "host", "loss", "snt", "avg", "best", "wrst"}, mtrValues)
-}
-
 func PushToIpaas(db string, table string, columns []string, values [][]interface{}) {
 	reportData := RequestIpaas{
 		Database: db,
@@ -104,6 +82,6 @@ func PushToIpaas(db string, table string, columns []string, values [][]interface
 		GlobalLog.Errorf("ReportToIpaas %v", responseIpaas)
 		return
 	}
-	GlobalLog.Info("ReportToIpaas success tasks")
+	GlobalLog.Infof("ReportToIpaas success tasks")
 	//GlobalLog.Infof("ReportToIpaas success tasks >>> t: %v, src: %v, dst: %v, dport: %v", d.T, d.Src, d.Dst, d.Dport)
 }

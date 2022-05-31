@@ -49,7 +49,7 @@ func Get(url string, header map[string]string) (body []byte, httpCode int, err e
 		}
 	}
 
-	client := &http.Client{Timeout: 5 * time.Second}
+	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return body, httpCode, fmt.Errorf("http client do: %v", err.Error())

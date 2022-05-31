@@ -9,11 +9,12 @@ import (
 )
 
 var API = map[string]string{
-	"阿里星火": "https://ipaas.paigod.work/api/v1/alxh",
-	"字节跳动": "https://ipaas.paigod.work/api/v1/zjtd",
+	//"阿里星火":     "https://ipaas.paigod.work/api/v1/alxh",
+	//"字节跳动":     "https://ipaas.paigod.work/api/v1/zjtd",
+	"kuaishou": "http://ippool.paigod.work/peers?machineid=8e6a2db3d4e46c0c02ba30322fc994a0&appid=kuaishou&network=tcp",
 }
 
-type Response struct {
+type ResponseIpass struct {
 	Code int `json:"code"`
 	Data []struct {
 		Target string `json:"target"`
@@ -21,18 +22,36 @@ type Response struct {
 	Msg string `json:"msg"`
 }
 
-type Targets struct {
-	T      string
-	Dev    string
-	Biz    string
-	BId    string
-	BD     string
-	Region string
-	Ip     string
-	Port   string
+type ResponseIppool struct {
+	Success bool         `json:"success"`
+	Code    int          `json:"code"`
+	Msg     string       `json:"msg"`
+	Data    []IppoolData `json:"data"`
 }
 
-func MonitorTargets() (targets []*Targets) {
+type IppoolData struct {
+	Mid       string `json:"mid"`
+	Appid     string `json:"appid"`
+	InnerIP   string `json:"inner_ip"`
+	InnerPort string `json:"inner_port"`
+	OuterIP   string `json:"outer_ip"`
+	OuterPort string `json:"outer_port"`
+	Province  string `json:"province"`
+	Isp       string `json:"isp"`
+}
+
+type Target struct {
+	Dev       string
+	Mid       string
+	Biz       string
+	BId       string
+	BD        string
+	Region    string
+	OuterIp   string
+	OuterPort string
+}
+
+func Targets() (targets []*Target) {
 	for bn, url := range API {
 		body, httpcode, err := request.Get(url, nil)
 		if err != nil {
@@ -45,49 +64,76 @@ func MonitorTargets() (targets []*Targets) {
 			return
 		}
 
-		var res Response
-		if err := json.Unmarshal(body, &res); err != nil {
-			log.GlobalLog.Errorf("json.Unmarshal %v", httpcode)
-			return
-		}
+		if bn == "kuaishou" {
+			var resIppool ResponseIppool
+			if err := json.Unmarshal(body, &resIppool); err != nil {
+				log.GlobalLog.Errorf("json.Unmarshal %v", httpcode)
+				return
+			}
 
-		if res.Code != 0 {
-			log.GlobalLog.Errorf("get monitor targets code %v", httpcode)
-			return
-		}
+			if resIppool.Code != 0 {
+				log.GlobalLog.Errorf("get monitor targets code %v", httpcode)
+				return
+			}
 
-		for _, t := range res.Data {
-			lines := strings.Split(t.Target, "\n")
-			for _, line := range lines {
-				strs := strings.Split(line, "|")
-				if len(strs) < 4 {
-					continue
-				}
-
-				ip, port, err := net.SplitHostPort(strs[2])
-				if err != nil {
-					log.GlobalLog.Errorf("ip info err: %v", httpcode)
-					continue
-				}
-
-				var device string
-				if strings.Contains(strs[1], "交换机") {
-					device = "switch"
-				} else {
-					device = "server"
-				}
-
-				targets = append(targets, &Targets{
-					Dev:    device,
-					Biz:    bn,
-					BId:    strs[0],
-					Region: strs[1],
-					Ip:     ip,
-					Port:   port,
-					BD:     strs[3],
+			for _, t := range resIppool.Data {
+				targets = append(targets, &Target{
+					Dev:       "server",
+					Mid:       t.Mid,
+					Biz:       "kuaishou",
+					BId:       "",
+					Region:    "",
+					OuterIp:   t.OuterIP,
+					OuterPort: t.OuterPort,
+					BD:        "",
 				})
+			}
+		} else {
+			var resIpass ResponseIpass
+			if err := json.Unmarshal(body, &resIpass); err != nil {
+				log.GlobalLog.Errorf("json.Unmarshal %v", httpcode)
+				return
+			}
+
+			if resIpass.Code != 0 {
+				log.GlobalLog.Errorf("get monitor targets code %v", httpcode)
+				return
+			}
+
+			for _, t := range resIpass.Data {
+				lines := strings.Split(t.Target, "\n")
+				for _, line := range lines {
+					strs := strings.Split(line, "|")
+					if len(strs) < 4 {
+						continue
+					}
+
+					ip, port, err := net.SplitHostPort(strs[2])
+					if err != nil {
+						log.GlobalLog.Errorf("ip info err: %v", httpcode)
+						continue
+					}
+
+					var device string
+					if strings.Contains(strs[1], "交换机") {
+						device = "switch"
+					} else {
+						device = "server"
+					}
+
+					targets = append(targets, &Target{
+						Dev:       device,
+						Biz:       bn,
+						BId:       strs[0],
+						Region:    strs[1],
+						OuterIp:   ip,
+						OuterPort: port,
+						BD:        strs[3],
+					})
+				}
 			}
 		}
 	}
+
 	return
 }
