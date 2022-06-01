@@ -65,7 +65,7 @@ func chQuery() (Data []Data, err error) {
 	url := "https://ipaas.paigod.work/api/v1/ckquery"
 	method := "POST"
 
-	payload := strings.NewReader(`select device,business,bd,bid,region,dst,count(dst) c, groupArray(concat(toString(t),', ','avg:',toString(round(avg,2)),', ','max:',toString(round(max,2)),', ','min:',toString(round(min,2)),', ','loss:',toString(round(loss_rate,2)))) pingr from (select t,device,business,bd,bid,region,dst,avg,max,min,loss_rate from ipaas.ip_detect_all  where t > toStartOfMinute(toDateTime(now())-600) and loss_rate > 5 order by t)  group by device,business,bd,bid,region,dst having c > 2 FORMAT JSON`)
+	payload := strings.NewReader(`select device,business,bd,bid,region,dst,count(dst) c, groupArray(concat(toString(t),', ','avg:',toString(round(avg,2)),', ','max:',toString(round(max,2)),', ','min:',toString(round(min,2)),', ','loss:',toString(round(loss_rate,2)))) pingr from (select t,device,business,bd,bid,region,dst,avg,max,min,loss_rate from ipaas.ip_detect_all  where t > toStartOfMinute(toDateTime(now())-900) and loss_rate > 5 order by t)  group by device,business,bd,bid,region,dst having c > 2 FORMAT JSON`)
 
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, payload)

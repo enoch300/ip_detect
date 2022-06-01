@@ -9,9 +9,9 @@ import (
 )
 
 var API = map[string]string{
-	//"阿里星火":     "https://ipaas.paigod.work/api/v1/alxh",
-	//"字节跳动":     "https://ipaas.paigod.work/api/v1/zjtd",
-	"kuaishou": "http://ippool.paigod.work/peers?machineid=8e6a2db3d4e46c0c02ba30322fc994a0&appid=kuaishou&network=tcp",
+	"阿里星火": "https://ipaas.paigod.work/api/v1/alxh",
+	"字节跳动": "https://ipaas.paigod.work/api/v1/zjtd",
+	//"kuaishou": "http://ippool.paigod.work/peers?machineid=8e6a2db3d4e46c0c02ba30322fc994a0&appid=kuaishou&network=tcp",
 }
 
 type ResponseIpass struct {
