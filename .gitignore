@@ -1,5 +1,5 @@
 logs
-detectd
+bin
 *.tar.gz
 *.md5
 build.sh
