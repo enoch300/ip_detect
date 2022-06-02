@@ -1,24 +1,12 @@
 package app
 
 import (
+	"fmt"
 	"ip_detect/app/sub"
+	"os"
 )
 
 func Run() {
-	sub.SubMessage("agent2")
-	//go alarm.Check()
-	//for {
-	//	for _, target := range api.Targets() {
-	//		if target.Biz == "kuaishou" {
-	//			if net.ParseIP(target.OuterIp).To4() != nil {
-	//				task := NewTask(target, false, false, true)
-	//				go detect(task)
-	//			}
-	//		} else {
-	//			task := NewTask(target, true, false, true)
-	//			go detect(task)
-	//		}
-	//	}
-	//	time.Sleep(5 * time.Minute)
-	//}
+	hostname, _ := os.Hostname()
+	sub.SubMessage(fmt.Sprintf("ip_detect_%s", hostname))
 }

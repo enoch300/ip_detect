@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/enoch300/glog v0.0.0-20210913102843-60ae70263a05
-	github.com/enoch300/nt v1.0.5
+	github.com/enoch300/nt v1.0.6
 	github.com/pochard/commons v1.1.2
 	github.com/sirupsen/logrus v1.8.1
 )
@@ -27,6 +27,6 @@ require (
 require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/vmihailenco/msgpack v3.3.3+incompatible
-	golang.org/x/net v0.0.0-20220526153639-5463443f8c37 // indirect
+	golang.org/x/net v0.0.0-20220531201128-c960675eff93 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 )

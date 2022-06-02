@@ -81,14 +81,17 @@ func Targets() (targets []*Target) {
 
 			for _, t := range resIppool.Data {
 				targets = append(targets, &Target{
-					Dev:       "server",
-					Mid:       t.Mid,
-					Biz:       "kuaishou",
-					BId:       "",
-					Region:    "",
-					OuterIp:   t.OuterIP,
-					OuterPort: t.OuterPort,
-					BD:        "",
+					Dev:         "server",
+					Mid:         t.Mid,
+					Biz:         "kuaishou",
+					BId:         "",
+					Region:      "",
+					DoPing:      false,
+					DoMtr:       false,
+					DoCheckPort: true,
+					OuterIp:     t.OuterIP,
+					OuterPort:   t.OuterPort,
+					BD:          "",
 				})
 			}
 		} else {
@@ -125,13 +128,16 @@ func Targets() (targets []*Target) {
 					}
 
 					targets = append(targets, &Target{
-						Dev:       device,
-						Biz:       bn,
-						BId:       strs[0],
-						Region:    strs[1],
-						OuterIp:   ip,
-						OuterPort: port,
-						BD:        strs[3],
+						Dev:         device,
+						Biz:         bn,
+						BId:         strs[0],
+						Region:      strs[1],
+						DoPing:      true,
+						DoMtr:       false,
+						DoCheckPort: false,
+						OuterIp:     ip,
+						OuterPort:   port,
+						BD:          strs[3],
 					})
 				}
 			}

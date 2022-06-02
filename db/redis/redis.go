@@ -13,7 +13,7 @@ var (
 // Connect 初始化连接
 func Connect() (err error) {
 	RDB = redis.NewClient(&redis.Options{
-		Addr:     "192.168.221.176:6379",
+		Addr:     "192.168.221.179:6379",
 		Password: "", // no password set
 		DB:       0,  // use default DB
 		PoolSize: 10, // 连接池大小

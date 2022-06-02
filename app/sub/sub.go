@@ -2,7 +2,6 @@ package sub
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/vmihailenco/msgpack"
 	"ip_detect/api"
 	"ip_detect/app/detect"
@@ -21,9 +20,9 @@ func SubMessage(channel string) {
 	ch := sub.Channel()
 	for msg := range ch {
 		var target api.Target
-		err := msgpack.Marshal([]byte(msg.Payload), &target)
-		if err := json.Unmarshal([]byte(msg.Payload), &target); err != nil {
-			log.GlobalLog.Errorf("json unmarshal %v", err.Error())
+		err = msgpack.Unmarshal([]byte(msg.Payload), &target)
+		if err != nil {
+			log.GlobalLog.Errorf("msgpack unmarshal %v, msg: %v", err.Error(), msg.Payload)
 			continue
 		}
 

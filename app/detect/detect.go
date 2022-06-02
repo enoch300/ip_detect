@@ -1,12 +1,12 @@
 package detect
 
 import (
-	"fmt"
 	"github.com/enoch300/nt/mtr"
 	"github.com/enoch300/nt/ping"
 	"github.com/pochard/commons/randstr"
 	"ip_detect/api"
 	"ip_detect/utils/log"
+	"math/rand"
 	"net"
 	"sync"
 	"time"
@@ -62,20 +62,20 @@ func (t *Task) checkPort(wg *sync.WaitGroup) {
 }
 
 func (t *Task) Detect() {
-	//rand.Seed(time.Now().UnixNano())
-	//n := rand.Intn(300)
-	//time.Sleep(time.Second * time.Duration(n))
-	fmt.Println("detect >>> ", t.Target.OuterIp)
-	//wg := &sync.WaitGroup{}
-	//wg.Add(3)
-	//go t.ping(wg)
-	//go t.mtr(wg)
-	//go t.checkPort(wg)
-	//wg.Wait()
+	rand.Seed(time.Now().UnixNano())
+	n := rand.Intn(300)
+	time.Sleep(time.Second * time.Duration(n))
 
-	//log.GlobalLog.Infof("监测时间: %s, 业务名: %v, 业务ID: %v, 业务BD:%v, 触发策略: %v, 监控目标: %v(%s), 平均延时: %.2f, 最大延时: %.2f, 最小延时: %.2f, 丢包率: %.2f",
-	//	t.T, t.Target.Biz, t.Target.BId, t.Target.BD, "丢包率>5%", t.Target.OuterIp, t.Target.Region, t.PingReturn.AvgTime.Seconds()*1000, t.PingReturn.WrstTime.Seconds()*1000, t.PingReturn.BestTime.Seconds()*1000, t.PingReturn.DropRate)
-	//PushToIpaas(t)
+	wg := &sync.WaitGroup{}
+	wg.Add(3)
+	go t.ping(wg)
+	go t.mtr(wg)
+	go t.checkPort(wg)
+	wg.Wait()
+
+	log.GlobalLog.Infof("监测时间: %s, 业务名: %v, 业务ID: %v, 业务BD:%v, 触发策略: %v, 监控目标: %v(%s), 平均延时: %.2f, 最大延时: %.2f, 最小延时: %.2f, 丢包率: %.2f",
+		t.T, t.Target.Biz, t.Target.BId, t.Target.BD, "丢包率>5%", t.Target.OuterIp, t.Target.Region, t.PingReturn.AvgTime.Seconds()*1000, t.PingReturn.WrstTime.Seconds()*1000, t.PingReturn.BestTime.Seconds()*1000, t.PingReturn.DropRate)
+	PushToIpaas(t)
 }
 
 func NewTask(target *api.Target) *Task {
