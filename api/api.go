@@ -41,14 +41,17 @@ type IppoolData struct {
 }
 
 type Target struct {
-	Dev       string
-	Mid       string
-	Biz       string
-	BId       string
-	BD        string
-	Region    string
-	OuterIp   string
-	OuterPort string
+	Dev         string `json:"dev"`
+	Mid         string `json:"mid"`
+	Biz         string `json:"biz"`
+	BId         string `json:"bid"`
+	BD          string `json:"bd"`
+	Region      string `json:"region"`
+	OuterIp     string `json:"outer_ip"`
+	OuterPort   string `json:"outer_port"`
+	DoPing      bool   `json:"do_ping"`
+	DoMtr       bool   `json:"do_mtr"`
+	DoCheckPort bool   `json:"do_check_port"`
 }
 
 func Targets() (targets []*Target) {
