@@ -1,97 +1,97 @@
 package detect
 
 import (
-	"github.com/enoch300/nt/mtr"
-	"github.com/enoch300/nt/ping"
+	"github.com/go-redis/redis/v8"
 	"github.com/pochard/commons/randstr"
+	"github.com/vmihailenco/msgpack"
 	"ip_detect/api"
 	"ip_detect/utils/log"
-	"math/rand"
+	"ip_detect/utils/ping"
 	"net"
-	"sync"
+	"os"
 	"time"
 )
+
+type Msg struct {
+	Dev       string `json:"dev"`
+	Mid       string `json:"mid"`
+	Biz       string `json:"biz"`
+	BId       string `json:"bid"`
+	BD        string `json:"bd"`
+	Region    string `json:"region"`
+	OuterIp   string `json:"outer_ip"`
+	OuterPort string `json:"outer_port"`
+	Ping      bool   `json:"ping"`
+	Mtr       bool   `json:"mtr"`
+	CheckPort bool   `json:"check_port"`
+}
 
 type Task struct {
 	T          string
 	Uid        string
-	Target     *api.Target
-	PingReturn ping.PingReturn
-	MtrReturn  []mtr.Hop
+	Target     *Msg
+	PingReturn *ping.Ping
 	PortAlive  int
 }
 
-func (t *Task) ping(wg *sync.WaitGroup) {
-	defer wg.Done()
-	if !t.Target.DoPing {
+func (t *Task) ping() {
+	if !t.Target.Ping {
 		return
 	}
-	_, pingReturn, err := ping.Ping("0.0.0.0", t.Target.OuterIp, 32, 1000, 1000)
-	if err != nil {
-		log.GlobalLog.Errorf("ping %v", err.Error())
+
+	p := ping.NewPing("0.0.0.0", t.Target.OuterIp, 3, 32)
+	if err := p.SendICMP(); err != nil {
+		log.GlobalLog.Errorf("ping %v -> %v %v", err, "0.0.0.0", t.Target.OuterIp)
 		return
 	}
-	t.PingReturn = pingReturn
+
+	t.PingReturn = p
 }
 
-func (t *Task) mtr(wg *sync.WaitGroup) {
-	defer wg.Done()
-	if !t.Target.DoMtr {
-		return
-	}
-}
-
-func (t *Task) checkPort(wg *sync.WaitGroup) {
-	defer wg.Done()
-	if !t.Target.DoCheckPort {
-		return
-	}
-
-	address := net.JoinHostPort(t.Target.OuterIp, t.Target.OuterPort)
-	conn, err := net.DialTimeout("tcp", address, 3*time.Second)
-	if err != nil {
-		t.PortAlive = 0
-	} else {
-		if conn != nil {
-			t.PortAlive = 1
-			_ = conn.Close()
-		} else {
+func (t *Task) port() {
+	if t.Target.CheckPort {
+		conn, err := net.DialTimeout("tcp", net.JoinHostPort(t.Target.OuterIp, t.Target.OuterPort), time.Duration(3)*time.Second)
+		if err != nil {
 			t.PortAlive = 0
+		} else {
+			if conn != nil {
+				t.PortAlive = 1
+				_ = conn.Close()
+			} else {
+				t.PortAlive = 0
+			}
 		}
 	}
 }
 
-func (t *Task) Detect() {
-	rand.Seed(time.Now().UnixNano())
-	n := rand.Intn(300)
-	time.Sleep(time.Second * time.Duration(n))
-
-	wg := &sync.WaitGroup{}
-	wg.Add(3)
-	go t.ping(wg)
-	go t.mtr(wg)
-	go t.checkPort(wg)
-	wg.Wait()
-
-	log.GlobalLog.Infof("监测时间: %s, 业务名: %v, 业务ID: %v, 业务BD:%v, 触发策略: %v, 监控目标: %v(%s), 平均延时: %.2f, 最大延时: %.2f, 最小延时: %.2f, 丢包率: %.2f",
-		t.T, t.Target.Biz, t.Target.BId, t.Target.BD, "丢包率>5%", t.Target.OuterIp, t.Target.Region, t.PingReturn.AvgTime.Seconds()*1000, t.PingReturn.WrstTime.Seconds()*1000, t.PingReturn.BestTime.Seconds()*1000, t.PingReturn.DropRate)
-	PushToIpaas(t)
+func (t *Task) Do(c chan struct{}) {
+	t.ping()
+	t.port()
+	log.GlobalLog.Infof("监测时间: %s, 业务名: %v, 业务ID: %v, 业务BD:%v, 监控目标: %v:%s(%v), 归属: %s, 平均延时: %.2f, 最大延时: %.2f, 最小延时: %.2f, 丢包率: %.2f",
+		t.T, t.Target.Biz, t.Target.BId, t.Target.BD, t.Target.OuterIp, t.Target.OuterPort, t.PortAlive, t.Target.Region, t.PingReturn.AvgDelay.Seconds()*1000, t.PingReturn.MaxDelay.Seconds()*1000, t.PingReturn.MinDelay.Seconds()*1000, t.PingReturn.LossRate)
+	go PushToIpaas(t)
+	<-c
 }
 
-func NewTask(target *api.Target) *Task {
+func NewTask(m *redis.Message) (*Task, error) {
+	var msg *Msg
+	err := msgpack.Unmarshal([]byte(m.Payload), &msg)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Task{
 		T:          time.Now().Format("2006-01-02 15:04:05"),
 		Uid:        randstr.RandomAlphanumeric(17),
-		Target:     target,
-		PingReturn: ping.PingReturn{},
-		MtrReturn:  make([]mtr.Hop, 0),
-		PortAlive:  0,
-	}
+		Target:     msg,
+		PingReturn: &ping.Ping{},
+	}, nil
 }
 
 func PushToIpaas(t *Task) {
 	var values [][]interface{}
-	value := []interface{}{t.T, t.Uid, t.Target.Mid, t.Target.Dev, t.Target.Biz, t.Target.BD, t.Target.BId, t.Target.Region, "ali", t.Target.OuterIp, t.Target.OuterPort, t.PortAlive, t.PingReturn.AvgTime.Seconds() * 1000, t.PingReturn.WrstTime.Seconds() * 1000, t.PingReturn.BestTime.Seconds() * 1000, t.PingReturn.DropRate}
+	hostname, _ := os.Hostname()
+	value := []interface{}{t.T, t.Uid, t.Target.Mid, t.Target.Dev, t.Target.Biz, t.Target.BD, t.Target.BId, t.Target.Region, hostname, t.Target.OuterIp, t.Target.OuterPort, t.PortAlive, t.PingReturn.AvgDelay.Seconds() * 1000, t.PingReturn.MaxDelay.Seconds() * 1000, t.PingReturn.MinDelay.Seconds() * 1000, t.PingReturn.LossRate}
 	values = append(values, value)
 	api.PushToIpaas("ipaas", "ip_detect", []string{"t", "id", "mid", "device", "business", "bd", "bid", "region", "src", "dst", "dport", "dport_alive", "avg", "max", "min", "loss_rate"}, values)
 
