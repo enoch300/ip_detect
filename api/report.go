@@ -2,8 +2,8 @@ package api
 
 import (
 	"encoding/json"
-	"ip_detect/request"
 	. "ip_detect/utils/log"
+	"ip_detect/utils/request"
 )
 
 type RequestIpaas struct {
@@ -83,5 +83,4 @@ func PushToIpaas(db string, table string, columns []string, values [][]interface
 		return
 	}
 	GlobalLog.Infof("ReportToIpaas success tasks")
-	//GlobalLog.Infof("ReportToIpaas success tasks >>> t: %v, src: %v, dst: %v, dport: %v", d.T, d.Src, d.Dst, d.Dport)
 }
