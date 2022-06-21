@@ -68,7 +68,7 @@ func PushToIpaas(db string, table string, columns []string, values [][]interface
 	}
 
 	if httpCode != 200 {
-		GlobalLog.Errorf("ReportToIpaas %v, httpCode: %v", respBody, httpCode)
+		GlobalLog.Errorf("ReportToIpaas %v, httpCode: %v", string(respBody), httpCode)
 		return
 	}
 

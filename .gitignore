@@ -1,11 +1,6 @@
-<<<<<<< HEAD
-logs
-bin
-=======
 logs/
 bin/
 detectd
->>>>>>> dev
 *.tar.gz
 *.md5
 build.sh
