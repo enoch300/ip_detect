@@ -5,18 +5,19 @@
 * @Date: 2021/9/15 11:05 下午
  */
 
-package log
+package logger
 
 import (
 	"github.com/enoch300/glog"
 	"github.com/sirupsen/logrus"
 	"ip_detect/utils"
 	"path/filepath"
+	"time"
 )
 
-var GlobalLog *logrus.Logger
+var Global *logrus.Logger
 
-func NewLogger(save uint) {
+func InitLogger() {
 	logPath := filepath.Dir(utils.GetCurrentAbPath()) + "/logs"
-	GlobalLog = glog.NewLogger(logPath, "ip_detect", save)
+	Global = glog.NewLogger(logPath, "ipdetect", "_%Y-%m-%d.log", 72*time.Hour, 24*time.Hour)
 }

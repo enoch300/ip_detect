@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"ip_detect/utils/log"
+	"ip_detect/utils/logger"
 	"ip_detect/utils/request"
 	"net"
 	"regexp"
@@ -37,9 +37,9 @@ func MachineId() (id string, err error) {
 func UpdateLocalEth() {
 	err := LocalEth()
 	if err != nil {
-		log.GlobalLog.Errorf(err.Error())
+		logger.Global.Errorf(err.Error())
 	}
-	log.GlobalLog.Infof("LocalEth: %s", Nic)
+	logger.Global.Infof("LocalEth: %s", Nic)
 
 	for {
 		time.Sleep(10 * time.Minute)
@@ -47,7 +47,7 @@ func UpdateLocalEth() {
 		if err != nil {
 			continue
 		}
-		log.GlobalLog.Infof("LocalEth: %s", Nic)
+		logger.Global.Infof("LocalEth: %s", Nic)
 	}
 }
 
